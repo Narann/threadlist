@@ -100,7 +100,7 @@ class ThreadList(list):
             msg = ("ThreadList running, can not change property max_count. "
                    "Please run joint()" )
             raise ExecutionOrderError(msg)
-        self.__max_count = value
+        self.__max_count = int(value)
 
     @property
     def total_timeout(self):
