@@ -23,7 +23,7 @@ class TimeoutError(Exception):
         Exception.__init__(self, msg)
 
 class ThreadList(list):
-    """An extended builtin list to handle (and limit) Python threads execution
+    """An extended Python list to handle (and limit) thread executions
 
     When you run many threading.Thread() instances, you can reach the maximum
     number of thread your system can support. This special list provide some
@@ -37,15 +37,16 @@ class ThreadList(list):
       Same as a build in Python list
 
     Properties:
-      max_count (int)       : The maximum number of threads that will run
-                              together (default: -1 meaning no limit).
-      timeout   (int, float): The maximum time (in seconds) the thread loop
-                              will run before raise a TimeoutError exception
-                              (default: -1 meaning no limit).
-      wait_time (int, float): The time the loop wait (in seconds) before check
-                              threads status again. More the threads are fast,
-                              less this value should be (default: 0.5).
-      is_running (readonly) : Return if the thread list is running.
+      max_count (int)           : The maximum number of threads that will run
+                                  together (default: -1 meaning no limit).
+      total_timeout (int, float): The maximum time (in seconds) the thread loop
+                                  will run before raise a TimeoutError
+                                  exception (default: -1 meaning no limit).
+      wait_time (int, float)    : The time the loop wait (in seconds) before
+                                  check threads status again. More the threads
+                                  are fast, less this value should be
+                                  (default: 0.5).
+      is_running (readonly)     : Return if the thread list is running.
 
     Methods:
       run()   : Hang your script execution, start the thread list and terminate
@@ -60,18 +61,18 @@ class ThreadList(list):
       >>> from threadlist import ThreadList
       >>> # The prefered way using run()
       >>> threads = ThreadList()
-      >>> for i in xrange(10):
+      >>> for _ in xrange(10):
       ...     thread = threading.Thread()
       ...     threads.append(thread)
       >>> threads.max_count = 4
-      >>> threads.timeout = 15
+      >>> threads.total_timeout = 15
       >>> threads.run()
 
       >>> import threading
       >>> from threadlist import ThreadList
       >>> # The start/join way
       >>> threads = ThreadList()
-      >>> for i in xrange(10):
+      >>> for _ in xrange(10):
       ...     thread = threading.Thread()
       ...     threads.append(thread)
       >>> threads.start()
@@ -82,11 +83,11 @@ class ThreadList(list):
     def __init__(self, *args):
         """Init the class the same way than the builtin Python list"""
         list.__init__(self, *args)
-        self.__max_count  = -1
-        self.__timeout    = -1
-        self.__wait_time  = 0.5
-        self.__running    = False
-        self.__start_time = None
+        self.__max_count     = -1
+        self.__total_timeout = -1
+        self.__wait_time     = 0.5
+        self.__running       = False
+        self.__start_time    = None
 
     @property
     def max_count(self):
@@ -102,18 +103,18 @@ class ThreadList(list):
         self.__max_count = value
 
     @property
-    def timeout(self):
+    def total_timeout(self):
         """The maximum time (in seconds) the thread loop will run before raise
         a TimeoutError exception"""
-        return self.__timeout
+        return self.__total_timeout
 
-    @timeout.setter
-    def timeout(self, value):
+    @total_timeout.setter
+    def total_timeout(self, value):
         if self.__running :
-            msg = ("ThreadList running, can not change property timeout. "
+            msg = ("ThreadList running, can not change property total_timeout. "
                    "Please run joint()" )
             raise ExecutionOrderError(msg)
-        self.__timeout = value
+        self.__total_timeout = value
 
     @property
     def wait_time(self):
@@ -147,7 +148,7 @@ class ThreadList(list):
 
         while pending_threads :
 
-            self.__check_timeout()
+            self.__check_total_timeout()
 
             time.sleep(self.__wait_time)
 
@@ -171,16 +172,17 @@ class ThreadList(list):
             msg = "ThreadList not running, please call start()"
             raise ExecutionOrderError(msg)
         for thread in self:
-            self.__check_timeout()
+            self.__check_total_timeout()
             thread.join()
         self.__running = False
 
-    def __check_timeout(self):
-        """Check the loop doesn't reach the setted timeout"""
-        if self.__timeout > 0:
+    def __check_total_timeout(self):
+        """Check the loop doesn't reach the setted total timeout"""
+        if self.__total_timeout > 0:
             elapsed = time.time() - self.__start_time
-            if elapsed > self.__timeout:
-                msg = "Timeout (%ss) reached: %ss" % (self.__timeout, elapsed)
+            if elapsed > self.__total_timeout:
+                msg = "Timeout (%ss) reached: %ss" % (self.__total_timeout,
+                                                      elapsed)
                 raise TimeoutError(msg)
 
     def run(self):
@@ -197,11 +199,11 @@ if __name__ == "__main__":
             print self
 
     threads = ThreadList()
-    for i in xrange(10):
+    for _ in xrange(10):
         thread = MyThread()
         threads.append(thread)
     threads.max_count = 4
     threads.wait_time = 0.2
-    threads.timeout = 15
+    threads.total_timeout = 15
     threads.run()
 
