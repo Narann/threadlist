@@ -6,7 +6,7 @@ A thread loop "limiter" module for Python
 ThreadList
 ----------
 
-An extended builtin list to handle (and limit) Python threads execution.
+An extended Python list to handle (and limit) thread executions.
 
 When you run many slow threading.Thread() instances, you can reach the maximum number of thread your system can support. This special list provide some controls on how threads are started.
 
@@ -21,7 +21,7 @@ for _ in xrange(10):
     thread = threading.Thread()
     threads.append(thread)
 threads.max_count = 4
-threads.timeout = 15
+threads.total_timeout = 15
 try:
     threads.run() # wait until every thread is terminated
 except TimeoutError:
