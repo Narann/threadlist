@@ -1,7 +1,15 @@
 threadlist
 ==========
 
-A thread loop "limiter" module for Python
+A thread loop "limiter" module for Python.
+
+More details using:
+
+```python
+import threadlist
+help(threadlist)
+```
+
 
 ThreadList
 ----------
