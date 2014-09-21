@@ -9,7 +9,7 @@ import threading
 __author__  = 'Dorian Fevrier <fevrier.dorian@yahoo.fr>'
 
 __all__ = ["ThreadList",
-           "StartingError",
+           "ExecutionOrderError",
            "TimeoutError"]
 
 class ExecutionOrderError(Exception):
